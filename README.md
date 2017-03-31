@@ -9,10 +9,9 @@ npm run new_dev
 ``` 
 
 
-### progress:
-
-2017/03/31 40%
-finish toy Animate Queue
-finish basic animate Item class
-finish main loop
-finish pause modal
+## progress:
+### 2017/03/31 40%
+1. finish toy Animate Queue
+2. finish basic animate Item class
+3. finish main loop
+4. finish pause modal
