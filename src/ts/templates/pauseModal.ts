@@ -1,13 +1,13 @@
 export const modalTemplate = `
 <div  class="g-pause-modal" id ="pause_modal">
     <div>
-        继续游戏？
+        <h3>亲爱的用户，氪金啊！！！</h3> 
     </div>
     <span>
-        <button class="yes-button">确认</button>
+        <button class="yes-button">重氪</button>
     </span>
     <span>
-        <button class="no-button">取消</button>
+        <button class="no-button">吃土</button>
     </span>
 </div>
 `;

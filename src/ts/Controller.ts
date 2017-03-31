@@ -82,9 +82,21 @@ export class Controller {
             // this.paused ? this.continueAnimation() : this.pause();
             this.paw.catchToy();
         });
+        this.dom.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            // this.paused ? this.continueAnimation() : this.pause();
+            this.paw.catchToy();
+        });
+
         this.btn.onclick = () => {
             this.paused ? this.continueAnimation() : this.pause();
         };
+        this.btn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            this.paused ? this.continueAnimation() : this.pause();
+        });
         this.paw.onTouchBottom((position) => {
             console.log(position);
             this.checkIfCached(position);
