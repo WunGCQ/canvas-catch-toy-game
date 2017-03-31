@@ -1,0 +1,24 @@
+.g-pause-modal {
+  position: fixed;
+  width: 300px;
+  height: 200px;
+  top: 50%;
+  left: 50%;
+  opacity : 0.3;
+  background : #fff;
+  border: 1px solid #ccc;
+  transform-origin : center;
+  transform: translate(-50%, -50%);
+  animation: show_modal 0.5s ease forwards;
+}
+
+@keyframes show_modal {
+  0% {
+    opacity : 0.3;
+    transform: translate(-50%, -50%) scale(0);
+  }
+  100% {
+    opacity : 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}

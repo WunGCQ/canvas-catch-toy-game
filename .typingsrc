@@ -1,0 +1,4 @@
+{
+  "proxy" : "https://registry.npm.taobao.org",
+  "rejectUnauthorized" : false
+}
