@@ -80,15 +80,20 @@ module.exports = _;
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_lodash__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_lodash___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_lodash__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__components_modal__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__items_Doll__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__service_index__ = __webpack_require__(11);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__items_Doll__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__items_Paw__ = __webpack_require__(12);
+
 
 
 const canvasId = 'canvas';
 const body = document.body;
 const { requestAnimationFrame: animate } = window;
 
+
 class Controller {
     constructor() {
+        this.btn = document.getElementById('pause_btn');
         this.dolls = [];
         this.dom = document.getElementsByTagName('canvas')[0];
         this.ctx = this.dom.getContext('2d');
@@ -97,21 +102,28 @@ class Controller {
     }
     init() {
         this.setSize();
-        this.bind();
+        this.addPaw();
         this.loop();
+        this.bind();
     }
     addDolls() {
-        const last = __WEBPACK_IMPORTED_MODULE_2__items_Doll__["a" /* Doll */].lastItem(__WEBPACK_IMPORTED_MODULE_2__items_Doll__["a" /* Doll */])();
+        const last = __WEBPACK_IMPORTED_MODULE_3__items_Doll__["a" /* Doll */].lastItem(__WEBPACK_IMPORTED_MODULE_3__items_Doll__["a" /* Doll */])();
         if (!last || last && last.progress >= 0.2) {
-            const doll = new __WEBPACK_IMPORTED_MODULE_2__items_Doll__["a" /* Doll */](this.ctx, void 0, {
-                width: 50,
-                height: 50
-            }, this.size, "./images/7078609.jpeg");
-            const { width: x, height: y } = this.size;
-            doll.setPath([{ x, y: y - 50 }, { x: -50, y: y - 50 }]);
-            __WEBPACK_IMPORTED_MODULE_2__items_Doll__["a" /* Doll */].addItem(__WEBPACK_IMPORTED_MODULE_2__items_Doll__["a" /* Doll */])(doll);
-            this.dolls = __WEBPACK_IMPORTED_MODULE_2__items_Doll__["a" /* Doll */].items;
+            __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__service_index__["a" /* getDollType */])().then(type => {
+                const doll = new __WEBPACK_IMPORTED_MODULE_3__items_Doll__["a" /* Doll */](this.ctx, void 0, {
+                    width: 50,
+                    height: 50
+                }, this.size, type.src, type);
+                const { width: x, height: y } = this.size;
+                doll.setPath([{ x, y: y - 50 }, { x: -50, y: y - 50 }]);
+                __WEBPACK_IMPORTED_MODULE_3__items_Doll__["a" /* Doll */].addItem(__WEBPACK_IMPORTED_MODULE_3__items_Doll__["a" /* Doll */])(doll);
+                this.dolls = __WEBPACK_IMPORTED_MODULE_3__items_Doll__["a" /* Doll */].items;
+            });
         }
+    }
+    addPaw() {
+        const x = this.size.width / 2;
+        this.paw = new __WEBPACK_IMPORTED_MODULE_4__items_Paw__["a" /* Paw */](this.ctx, 'paw', { width: 50, height: 50 }, { x, y: 0 }, [{ x, y: 0 }, { x: x, y: this.size.height - 50 }, { x, y: 0 }]);
     }
     setSize() {
         const { clientHeight: height, clientWidth: width } = body;
@@ -121,18 +133,49 @@ class Controller {
     }
     bind() {
         this.dom.addEventListener('click', e => {
+            // this.paused ? this.continueAnimation() : this.pause();
+            this.paw.catchToy();
+        });
+        this.btn.onclick = () => {
             this.paused ? this.continueAnimation() : this.pause();
+        };
+        this.paw.onTouchBottom(position => {
+            console.log(position);
+            this.checkIfCached(position);
         });
         window.addEventListener('resize', __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_lodash__["throttle"])(this.setSize.bind(this), 100));
         __WEBPACK_IMPORTED_MODULE_1__components_modal__["a" /* Modal */].onHide(this.continueAnimation.bind(this));
+    }
+    checkIfCached({ x: _x, y: _y }) {
+        let index = 0,
+            i = 0;
+        const len = this.dolls.length;
+        for (; i < len; i++) {
+            let { x, y } = this.dolls[i].position;
+            x += 25;
+            y -= 25;
+            const dir = Math.sqrt(Math.pow(x - _x, 2) + Math.pow(y - _y, 2));
+            console.log(dir);
+            if (dir < 20) {
+                this.pause();
+                const { type, id } = this.dolls[i];
+                __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__service_index__["b" /* checkShallPay */])(type).then(allow => {
+                    if (allow) {
+                        alert(`恭喜成功夹走${JSON.stringify(type)}`);
+                        __WEBPACK_IMPORTED_MODULE_3__items_Doll__["a" /* Doll */].removeItem(__WEBPACK_IMPORTED_MODULE_3__items_Doll__["a" /* Doll */])(id);
+                    }
+                });
+                break;
+            }
+        }
     }
     loop() {
         animate(this.doAnimation.bind(this));
     }
     doAnimation() {
         if (!this.paused) {
-            this.ctx.clearRect(0, 0, this.size.width, this.size.height);
-            // console.log('move');
+            this.ctx.clearRect(0, 0, this.size.width * 5, this.size.height * 5);
+            this.paw.move();
             this.dolls.forEach(d => {
                 d.move();
             });
@@ -158,12 +201,17 @@ class Controller {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_lodash__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_lodash___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_lodash__);
+
 let ids = 1;
 class Item {
     constructor(ctx, id = ++ids, initialPosition) {
+        this.totalFrames = 0;
         this.ctx = ctx;
         this.id = id;
         this.frames = [];
+        this.initialPosition = initialPosition;
         this.state = {
             moving: false
         };
@@ -177,7 +225,29 @@ class Item {
         this.generatePath(path);
         this.state.moving = true;
     }
-    generatePath(path) {}
+    generatePath(path) {
+        const paths = path.map((p, i) => [p, path[i + 1]]).slice(0, -1);
+        const frameMovedDistanceArr = paths.map(([a, b]) => {
+            return Math.sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y));
+        }, []);
+        const frameMovedDistance = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_lodash__["sum"])(frameMovedDistanceArr);
+        const frameNumber = Math.ceil(this.time / 16);
+        this.totalFrames = frameNumber;
+        this.frames = paths.reduce((ret, p, i) => {
+            const [pre, next] = p;
+            const frameCurNumber = Math.ceil(frameNumber * (frameMovedDistanceArr[i] / frameMovedDistance));
+            let j = 0;
+            const dX = (next.x - pre.x) / frameCurNumber,
+                  dY = (next.y - pre.y) / frameCurNumber;
+            let len = ret.length;
+            do {
+                ret[len + j] = { x: pre.x + dX * j, y: pre.y + dY * j };
+            } while (++j < frameCurNumber);
+            return ret;
+        }, []);
+        this.logFrames();
+    }
+    logFrames() {}
     move() {
         if (this.state.moving) {
             const next = this.frames.shift();
@@ -314,23 +384,23 @@ const mmmm = new __WEBPACK_IMPORTED_MODULE_0__Controller__["a" /* Controller */]
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Item__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_lodash__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_lodash___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_lodash__);
-
 
 let requestedImages = {};
 class Doll extends __WEBPACK_IMPORTED_MODULE_0__Item__["a" /* Item */] {
-    constructor(ctx, id, size, initialPosition, imgSrc = "/") {
+    constructor(ctx, id, size, initialPosition, imgSrc = "/", type) {
         super(ctx, id, initialPosition);
         this.speed = { x: 1, y: 0 };
-        this.time = 6000;
         this.imgSrc = "/";
         this.img = null;
-        this.frames = [];
-        this.totalFrames = 0;
+        this.type = null;
         this.size = size;
         this.imgSrc = imgSrc;
+        this.type = type;
         this.loadImg(imgSrc);
+        this.time = 5000;
+    }
+    get position() {
+        return this.frames[0];
     }
     get progress() {
         return 1 - this.frames.length / this.totalFrames;
@@ -348,33 +418,11 @@ class Doll extends __WEBPACK_IMPORTED_MODULE_0__Item__["a" /* Item */] {
             this.img = Doll.images[src];
         }
     }
-    generatePath(path) {
-        // console.log(path);
-        const paths = path.map((p, i) => [p, path[i + 1]]).slice(0, -1);
-        const frameMovedDistanceArr = paths.map(([a, b]) => {
-            return Math.sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y));
-        }, []);
-        const frameMovedDistance = __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1_lodash__["sum"])(frameMovedDistanceArr);
-        const frameNumber = Math.ceil(this.time / 16);
-        this.totalFrames = frameNumber;
-        this.frames = paths.reduce((ret, p, i) => {
-            const [pre, next] = p;
-            const frameCurNumber = Math.ceil(frameNumber * (frameMovedDistanceArr[i] / frameMovedDistance));
-            let j = 0;
-            const dX = (next.x - pre.x) / frameCurNumber,
-                  dY = (next.y - pre.y) / frameCurNumber;
-            let len = ret.length;
-            do {
-                ret[len + j] = { x: pre.x + dX * j, y: pre.y + dY * j };
-            } while (++j < frameCurNumber);
-            return ret;
-        }, []);
-        // console.log(this.frames.map(({x}: { x, y }): number => x).join(','));
-    }
-    timeTo() {}
     draw(frame) {
         if (frame) {
+            this.ctx.save();
             this.img && this.ctx.drawImage(this.img, frame.x, frame.y, this.size.width, this.size.height);
+            this.ctx.restore();
         }
     }
     move() {
@@ -396,7 +444,6 @@ class Doll extends __WEBPACK_IMPORTED_MODULE_0__Item__["a" /* Item */] {
 /* harmony export (immutable) */ __webpack_exports__["a"] = Doll;
 
 Doll.images = {};
-Doll.items = [];
 
 /***/ }),
 /* 6 */
@@ -424,6 +471,135 @@ const modalTemplate = `
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
+
+/***/ }),
+/* 8 */,
+/* 9 */,
+/* 10 */,
+/* 11 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/**
+ * Created by wangchunqi on 2017/3/31.
+ */
+const toyTypes = Array.from([1, 2, 3, 4], n => ({
+    id: n + '',
+    src: `./images/${n}.jpeg`,
+    name: `娃娃-${n}`,
+    price: n
+}));
+/* unused harmony export toyTypes */
+
+const getDollType = () => {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            const rand = Math.random();
+            const index = rand < 0.1 ? 0 : rand < 0.3 ? 1 : rand < 0.8 ? 2 : 3;
+            resolve(toyTypes[index]);
+        }, 10);
+    });
+};
+/* harmony export (immutable) */ __webpack_exports__["a"] = getDollType;
+
+let maxNum = 5;
+let items = [];
+const checkShallPay = type => {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            if (items.length < maxNum) {
+                items.push(type);
+                resolve(true);
+            } else {
+                alert(`您一共获得了${items.map(i => JSON.stringify(i)).join('、')}个奖品，已经达到${maxNum}上限了，继续充钱再玩吧~`);
+                resolve(false);
+            }
+        }, 10);
+    });
+};
+/* harmony export (immutable) */ __webpack_exports__["b"] = checkShallPay;
+
+
+/***/ }),
+/* 12 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Item__ = __webpack_require__(2);
+
+let requestedImages = {};
+const size = 50;
+class Paw extends __WEBPACK_IMPORTED_MODULE_0__Item__["a" /* Item */] {
+    constructor(ctx, id, size, initialPosition, _path) {
+        super(ctx, id, initialPosition);
+        this.speed = { x: 1, y: 0 };
+        this.img = null;
+        this.type = null;
+        this.frames = [];
+        this.totalFrames = 0;
+        this.onTouchBottomFunc = () => {};
+        this.size = size;
+        this.state = { moving: false };
+        this.time = 2000;
+        this.path = _path;
+    }
+    get progress() {
+        return 1 - this.frames.length / this.totalFrames;
+    }
+    draw(bottom) {
+        if (bottom) {
+            // const x =
+            const TOP_CENTER = this.initialPosition;
+            const { width, height } = this.size;
+            this.ctx.save();
+            this.ctx.beginPath();
+            this.ctx.moveTo(TOP_CENTER.x, 0);
+            this.ctx.lineWidth = width / 2;
+            this.ctx.strokeStyle = '#f00';
+            this.ctx.lineTo(bottom.x, bottom.y);
+            // this.ctx.rect(TOP_CENTER.x - width/2, 0, bottom.x + width/2, bottom.y);
+            this.ctx.stroke();
+            this.ctx.closePath();
+            this.ctx.restore();
+            // console.log('y', JSON.stringify(bottom), JSON.stringify(TOP_CENTER));
+            // this.ctx.fill();
+        }
+    }
+    logFrames() {
+        console.log(JSON.stringify(this.frames.map(x => x.y)));
+    }
+    move() {
+        const { moving } = this.state;
+        if (moving) {
+            const next = this.frames.shift();
+            this.draw(next);
+            if (this.frames.length == 0) {
+                // Paw.removeItem(Paw)(this.id);
+                // Item.removeItem(this.id);
+                this.state.moving = false;
+                this.frames = [];
+                this.totalFrames = 0;
+            } else {
+                if (this.frames.length == this.totalFrames / 2 || this.frames.length == (this.totalFrames + 1) / 2) {
+                    this.onTouchBottomFunc(next);
+                }
+            }
+        } else {
+            // Item.removeItem(this.id);
+        }
+    }
+    catchToy() {
+        if (this.frames.length == 0) {
+            this.setPath(this.path);
+        }
+    }
+    onTouchBottom(func) {
+        this.onTouchBottomFunc = func;
+    }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = Paw;
+
+Paw.items = [];
 
 /***/ })
 /******/ ]);

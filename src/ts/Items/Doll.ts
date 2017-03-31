@@ -2,27 +2,28 @@ import {Point} from '../basic/index'
 import {Item} from '../Item';
 import {Rect} from "../basic/Rect";
 import {sum} from 'lodash';
+import {toyType} from '../service/index';
 
 let requestedImages = {};
 
 export class Doll extends Item {
     private speed: Point = {x: 1, y: 0};
     private size: Rect;
-    private time: number = 6000;
     private imgSrc: string = "/";
     private img: HTMLImageElement = null;
-    frames: Point[] = [];
-    protected totalFrames: number = 0;
+    public type: toyType = null;
     protected static images: { [propName: string]: HTMLImageElement } = {};
 
-
-    public static items: Doll[] = [];
-
-    constructor(ctx: CanvasRenderingContext2D, id, size: Rect, initialPosition, imgSrc: string = "/") {
+    get position(): Point{
+        return this.frames[0];
+    }
+    constructor(ctx: CanvasRenderingContext2D, id, size: Rect, initialPosition, imgSrc: string = "/", type: toyType) {
         super(ctx, id, initialPosition);
         this.size = size;
         this.imgSrc = imgSrc;
+        this.type = type;
         this.loadImg(imgSrc);
+        this.time = 5000;
     }
 
     get progress(): number {
@@ -43,39 +44,11 @@ export class Doll extends Item {
         }
     }
 
-    generatePath(path: Point[]) {
-        // console.log(path);
-
-        const paths = path.map((p: Point, i: number) => [p, path[i + 1]]).slice(0, -1);
-
-        const frameMovedDistanceArr: number[] = paths.map(([a, b]: [Point, Point]): number => {
-            return Math.sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y));
-        }, []);
-        const frameMovedDistance: number = sum(frameMovedDistanceArr);
-        const frameNumber: number = Math.ceil(this.time / 16);
-        this.totalFrames = frameNumber;
-        this.frames = paths.reduce((ret: Point[], p: Point[], i: number): Point[] => {
-            const [pre, next] = p;
-            const frameCurNumber = Math.ceil(frameNumber * (frameMovedDistanceArr[i] / frameMovedDistance));
-            let j = 0;
-            const dX = (next.x - pre.x) / frameCurNumber, dY = (next.y - pre.y) / frameCurNumber;
-            let len = ret.length;
-            do {
-                ret[len + j] = {x: pre.x + dX * j, y: pre.y + dY * j};
-            } while (++j < frameCurNumber);
-            return ret;
-        }, []);
-        // console.log(this.frames.map(({x}: { x, y }): number => x).join(','));
-
-    }
-
-    timeTo() {
-
-    }
-
     draw(frame: Point) {
         if (frame) {
+            this.ctx.save();
             this.img && this.ctx.drawImage(this.img, frame.x, frame.y, this.size.width, this.size.height);
+            this.ctx.restore();
         }
     }
 

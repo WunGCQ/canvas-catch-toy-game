@@ -2,11 +2,9 @@
  * Created by wcq on 2017/3/30.
  */
 import {Point} from './basic/index';
+import {sum} from 'lodash';
 let ids: number = 1;
 
-interface ItemState {
-    moving: boolean;
-}
 interface ItemMap {
     [propName: string]: number;
 }
@@ -45,19 +43,23 @@ export class Item {
         }
     };
 
-    public static items: Item[] = [];
+    public static items: Array<any> = [];
     private static itemsIds: ItemMap = {};
 
 
     public id: number;
-    protected frames: object[];
-    protected state: ItemState;
+    protected frames: Point[];
+    protected time: number;
+    protected state: { [propName: string]: boolean; };
     protected ctx: CanvasRenderingContext2D;
+    protected totalFrames: number = 0;
+    protected initialPosition:Point;
 
     constructor(ctx: CanvasRenderingContext2D, id: number = ++ids, initialPosition: Point) {
         this.ctx = ctx;
         this.id = id;
         this.frames = [];
+        this.initialPosition = initialPosition;
         this.state = {
             moving: false,
         };
@@ -72,7 +74,29 @@ export class Item {
         this.state.moving = true;
     }
 
-    generatePath(path: Point[]): void {
+    generatePath(path: Point[]) {
+        const paths = path.map((p: Point, i: number) => [p, path[i + 1]]).slice(0, -1);
+        const frameMovedDistanceArr: number[] = paths.map(([a, b]: [Point, Point]): number => {
+            return Math.sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y));
+        }, []);
+        const frameMovedDistance: number = sum(frameMovedDistanceArr);
+        const frameNumber: number = Math.ceil(this.time / 16);
+        this.totalFrames = frameNumber;
+        this.frames = paths.reduce((ret: Point[], p: Point[], i: number): Point[] => {
+            const [pre, next] = p;
+            const frameCurNumber = Math.ceil(frameNumber * (frameMovedDistanceArr[i] / frameMovedDistance));
+            let j = 0;
+            const dX = (next.x - pre.x) / frameCurNumber, dY = (next.y - pre.y) / frameCurNumber;
+            let len = ret.length;
+            do {
+                ret[len + j] = {x: pre.x + dX * j, y: pre.y + dY * j};
+            } while (++j < frameCurNumber);
+            return ret;
+        }, []);
+        this.logFrames();
+    }
+
+    logFrames(){
 
     }
 

@@ -2,21 +2,30 @@
   "compilerOptions": {
     "watch": true,
     "module": "es2015",
-//    "noImplicitAny": true,
-//    "removeComments": true,
+    //    "noImplicitAny": true,
+    //    "removeComments": true,
     "preserveConstEnums": true,
-//    "outFile": "./dist/out.js",
+    //    "outFile": "./dist/out.js",
     "outDir": "./src/js",
     "sourceMap": false,
     "pretty": true,
-    "types" : ["node", "lodash", "express"],
+    "types": [
+      "node",
+      "lodash",
+      "express"
+    ],
     "moduleResolution": "classic",
     "allowJs": true,
-    "target": "es6"
+    "target": "es6",
+    "lib": [
+      "es2016",
+      "dom",
+      "es2015.promise"
+    ]
   },
   "include": [
     "src/ts/index.ts"
-//    "typings/**/*"
+    //    "typings/**/*"
   ],
   "exclude": [
     "./node_modules",

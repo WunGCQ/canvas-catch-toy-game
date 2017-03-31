@@ -2,6 +2,15 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="full-screen" content="yes">
+    <meta name="browsermode" content="application">
+    <meta name="x5-orientation" content="portrait">
+    <meta name="x5-fullscreen" content="true">
+    <meta name="x5-page-mode" content="app">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta content="yes" name="apple-mobile-web-app-capable">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
     <title>demo</title>
     <style>
         html,body{
@@ -10,13 +19,27 @@
             height: 100%;
         }
         #canvas{
-            background: #000;
+            background: #fff;
         }
+        #pause_btn {
+            position: fixed;
+            left: 10px;
+            top: 10px;
+            width: 50px;
+            height: 50px;
+            line-height: 50px;
+            text-align: center;
+            background: cornflowerblue;
+            color: #000;
+            font-size: 16px;
+        }
+
     </style>
     <link rel="stylesheet" href="./dist/main.css">
 </head>
 <body>
 <canvas id="canvas"></canvas>
+<button id="pause_btn">暂停</button>
 <script src="./lib/lodash.min.js"></script>
 <script src="./dist/main.js"></script>
 </body>
